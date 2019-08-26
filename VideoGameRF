@@ -1,0 +1,114 @@
+library(randomForest)
+###### WITH ESTIMATED NA's
+data = read.csv("vg_sales_withoutNA.csv")
+data2 = read.csv("vg_sales_withNA.csv")
+set.seed(1)
+train.index = sample(1:nrow(data),nrow(data)*0.7, replace = FALSE)
+train = data[train.index,]
+test = data[-train.index,]
+
+
+
+data_na = na.omit(data)
+train.index = sample(1:nrow(data_na),nrow(data_na)*0.7, replace = FALSE)
+train_na = data_na[train.index,]
+test_na =  data_na[-train.index,]
+
+reg.model = randomForest(Global_Sales~Platform+ Genre+ Publisher+ Critic_Score+ Critic_Count+ Rating, data = train_na, importance=TRUE)
+reg.model
+plot(reg.model)
+
+reg.model.100.1 =  randomForest(Global_Sales~Platform+ Genre+ Publisher+ Critic_Score+ Critic_Count+ Rating,data = train_na,ntree=200,mtry=1,importance=TRUE)
+reg.model.100.1
+
+reg.model.100.2 =  randomForest(Global_Sales~Platform+ Genre+ Publisher+ Critic_Score+ Critic_Count+ Rating,data = train_na,ntree=200,mtry=2,importance=TRUE)
+reg.model.100.2
+
+reg.model.100.3 =  randomForest(Global_Sales~Platform+ Genre+ Publisher+ Critic_Score+ Critic_Count+ Rating,data = train_na,ntree=200,mtry=3,importance=TRUE)
+reg.model.100.3
+
+reg.model.100.4 =  randomForest(Global_Sales~Platform+ Genre+ Publisher+ Critic_Score+ Critic_Count+ Rating,data = train_na,ntree=200,mtry=4,importance=TRUE)
+reg.model.100.4
+
+
+par(mfrow=c(4,2))
+plot(reg.model.100.1)
+plot(reg.model.100.2)
+plot(reg.model.100.3)
+plot(reg.model.100.4)
+
+importance(reg.model.100.2)
+varImpPlot(reg.model.100.2,main="Variable Importance Plots")
+
+
+result.mean<-  mean(data_na$Global_Sales)
+result.mean
+#.65
+train_na$Global_Sales = ifelse(train_na$Global_Sales>=0.65,"high","low")
+test_na$Global_Sales = ifelse(test_na$Global_Sales>=0.65,"high","low")
+summary(as.factor(train_na$Global_Sales))
+
+cl.model = randomForest(as.factor(Global_Sales)~Platform+ Genre+ Publisher+ Critic_Score+ Critic_Count+ Rating,data=train_na,importance=TRUE)
+cl.model
+
+pred.cl = predict(cl.model,test_na)
+
+c.matrix = table(test_na$Global_Sales,pred.cl); c.matrix
+acc = (c.matrix[4]+c.matrix[1])/ 1848
+sens.low = c.matrix[4]/(c.matrix[2]+c.matrix[4])
+prec.low = c.matrix[4]/(c.matrix[3]+c.matrix[4])
+data.frame(acc,sens.low,prec.low)
+varImpPlot(cl.model,main="Variable Importance Plots")
+
+###### WITHOUT ESTIMATED NA's
+data_na = na.omit(data2)
+train.index = sample(1:nrow(data_na),nrow(data_na)*0.7, replace = FALSE)
+train_na = data_na[train.index,]
+test_na =  data_na[-train.index,]
+
+reg.model = randomForest(Global_Sales~Platform+ Genre+ Publisher+ Critic_Score+Critic_Count+ Rating, data = train_na, importance=TRUE)
+reg.model
+plot(reg.model)
+
+reg.model.100.1 =  randomForest(Global_Sales~Platform+ Genre+ Publisher+ Critic_Score+Critic_Count+ Rating,data = train_na,ntree=200,mtry=1,importance=TRUE)
+reg.model.100.1
+
+reg.model.100.2 =  randomForest(Global_Sales~Platform+ Genre+ Publisher+ Critic_Score+Critic_Count+ Rating,data = train_na,ntree=200,mtry=2,importance=TRUE)
+reg.model.100.2
+
+
+reg.model.100.3 =  randomForest(Global_Sales~Platform+ Genre+ Publisher+ Critic_Score+Critic_Count+ Rating,data = train_na,ntree=200,mtry=3,importance=TRUE)
+reg.model.100.3
+
+reg.model.100.4 =  randomForest(Global_Sales~Platform+ Genre+ Publisher+ Critic_Score+Critic_Count+ Rating,data = train_na,ntree=200,mtry=4,importance=TRUE)
+reg.model.100.4
+
+
+par(mfrow=c(4,2))
+plot(reg.model.100.1)
+plot(reg.model.100.2)
+plot(reg.model.100.3)
+plot(reg.model.100.4)
+
+importance(reg.model.100.3)
+varImpPlot(reg.model.100.3,main="Variable Importance Plots")
+
+
+result.mean<-  mean(data_na$Global_Sales)
+result.mean
+
+train_na$Global_Sales = ifelse(train_na$Global_Sales>=0.78,"high","low")
+test_na$Global_Sales = ifelse(test_na$Global_Sales>=0.78,"high","low")
+summary(as.factor(train_na$Global_Sales))
+
+cl.model = randomForest(as.factor(Global_Sales)~Platform+ Genre+ Publisher+ Critic_Score+Critic_Count+ Rating,data=train_na,importance=TRUE)
+cl.model
+
+pred.cl = predict(cl.model,test_na)
+
+c.matrix = table(test_na$Global_Sales,pred.cl); c.matrix
+acc = (c.matrix[4]+c.matrix[1])/ 1411
+sens.low = c.matrix[4]/(c.matrix[2]+c.matrix[4])
+prec.low = c.matrix[4]/(c.matrix[3]+c.matrix[4])
+data.frame(acc,sens.low,prec.low)
+varImpPlot(cl.model,main="Variable Importance Plots")
